@@ -2,11 +2,9 @@ use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
 // use std::path::Path;
+//
 
-struct InputParam {
-    arg_name: String,
-    param_value: String,
-}
+mod argparser;
 
 struct DataLine {
     date: String,
@@ -29,45 +27,32 @@ fn main() {
     println!("");
     println!("");
 
-    let mut all_args: Vec<InputParam> = Vec::new();
+    let mut all_args: Vec<String> = Vec::new();
 
-    for argument in env::args() {
-
-        let split = argument.split("=");
-        let parts: Vec<&str> = split.collect();
-
-        let mut cur_arg = InputParam {
-            arg_name: String::from(parts[0]),
-            param_value: String::from("")
-        };
-        if parts.len() == 2 {
-            cur_arg.param_value = String::from(parts[1])
+    for (idx, argument) in env::args().enumerate() {
+        if idx == 0 {
+            continue;
         }
-        all_args.push(cur_arg);
+
+        all_args.push(argument);
     }
 
-    let mut input_file: String = String::from("");
-    let mut separator = String::from(",");
+    let parsed_arguments = argparser::parser::parse_arguments(all_args);
 
-    let mut help_asked = false;
+    let input_file = match parsed_arguments.get("input_file") {
+        Some(input_file_name) => String::from(input_file_name),
+        None => String::from(""),
+    };
 
-    for arg_item in all_args {
-        match arg_item.arg_name.as_ref() {
-            "-i" | "--input" => {
-                input_file = arg_item.param_value
-            },
-            "-h" | "--help" => {
-                help_asked = true;
-                println!("DEBUG: help asked for");
-            },
-            "-s" | "--separator" => {
-                separator = String::from(arg_item.param_value);
-            },
-            _ => {
-            }
+    let separator = match parsed_arguments.get("separator") {
+        Some(sep) => String::from(sep),
+        None => String::from(","),
+    };
 
-        }
-    }
+    let help_asked = match parsed_arguments.get("show_help") {
+        Some(_) => true,
+        None => false,
+    };
 
     if help_asked {
         show_help();
