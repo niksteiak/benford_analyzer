@@ -35,9 +35,6 @@ fn main() {
 
         let split = argument.split("=");
         let parts: Vec<&str> = split.collect();
-        if parts.len() != 2 {
-            continue;
-        }
 
         let mut cur_arg = InputParam {
             arg_name: String::from(parts[0]),
@@ -50,19 +47,35 @@ fn main() {
     }
 
     let mut input_file: String = String::from("");
-    for arg_item in all_args {
-        if arg_item.arg_name == "-i" || arg_item.arg_name == "--input" {
-            input_file = arg_item.param_value;
-        }
+    let mut separator = String::from(",");
 
-        if arg_item.arg_name == "-h" || arg_item.arg_name == "--help" {
-            show_help();
+    let mut help_asked = false;
+
+    for arg_item in all_args {
+        match arg_item.arg_name.as_ref() {
+            "-i" | "--input" => {
+                input_file = arg_item.param_value
+            },
+            "-h" | "--help" => {
+                help_asked = true;
+                println!("DEBUG: help asked for");
+            },
+            "-s" | "--separator" => {
+                separator = String::from(arg_item.param_value);
+            },
+            _ => {
+            }
+
         }
+    }
+
+    if help_asked {
+        show_help();
     }
 
     if !input_file.is_empty() {
         println!("Input file is: {}", input_file);
-        let data_items = read_file(input_file);
+        let data_items = read_file(input_file, &separator);
 
         for cur_item in data_items.unwrap() {
             println!("{}", cur_item.to_string());
@@ -72,7 +85,7 @@ fn main() {
 
 /// Read a file and return all its lines in a vector of DataLine items
 ///
-fn read_file(input_file: String) -> io::Result<Vec<DataLine>> {
+fn read_file(input_file: String, separator: &str) -> io::Result<Vec<DataLine>> {
     println!("Reading file and printing it out on screen...");
     println!("");
 
@@ -82,7 +95,7 @@ fn read_file(input_file: String) -> io::Result<Vec<DataLine>> {
 
     for line in reader.lines() {
         let line_item = line.unwrap();
-        let split = line_item.split(",");
+        let split = line_item.split(separator);
         let parts: Vec<&str> = split.collect();
         if parts.len() != 4 {
             continue;
@@ -116,6 +129,7 @@ fn show_help() {
     println!("Input parameters:");
     println!("\t-i=<filename> or --input=<filename>");
     println!("\t-o=<filename> or --output=<filename>");
+    println!("\t-s=<separator> or --separator=<separator> use the specified character/string to split the lines by");
     println!("");
     println!("... and of course we might add stuff later!");
 }
