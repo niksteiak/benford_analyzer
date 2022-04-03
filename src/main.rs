@@ -23,7 +23,6 @@ fn main() {
     println!("Hello world, I am Julio, the avenger!");
     println!("Just trying out some stuff here...");
     println!("");
-    println!("");
 
     let mut all_args: Vec<String> = Vec::new();
 
