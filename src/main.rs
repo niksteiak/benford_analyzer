@@ -1,23 +1,14 @@
 use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
+use std::string::String;
 
 mod argparser;
 
-struct DataLine {
-    date: String,
-    value1: String,
-    value2: String,
-    value3: String,
+struct DataSet {
+    name: String,
+    values: Vec<String>
 }
-
-impl DataLine {
-    fn to_string(self) -> String {
-        format!("Date: {}, Value1: {}, Value2: {}, Value3: {}",
-            self.date, self.value1, self.value2, self.value3)
-    }
-}
-
 
 fn main() {
     println!("Hello world, I am Julio, the avenger!");
@@ -59,43 +50,59 @@ fn main() {
         println!("Input file is: {}", input_file);
         let data_items = read_file(input_file, &separator);
 
-        for cur_item in data_items.unwrap() {
-            println!("{}", cur_item.to_string());
-        }
+        show_read_datasets(data_items.unwrap());
     }
 }
 
-/// Read a file and return all its lines in a vector of DataLine items
+/// Read a file and return all its lines in a vector of DataSet items
 ///
-fn read_file(input_file: String, separator: &str) -> io::Result<Vec<DataLine>> {
+fn read_file(input_file: String, separator: &str) -> io::Result<Vec<DataSet>> {
     println!("Reading file and printing it out on screen...");
     println!("");
 
-    let mut read_data: Vec<DataLine> = Vec::new();
     let file = File::open(input_file)?;
     let reader = BufReader::new(file);
 
-    for line in reader.lines() {
+    let mut data_sets: Vec<DataSet> = Vec::new();
+
+    for (idx, line) in reader.lines().enumerate() {
         let line_item = line.unwrap();
         let split = line_item.split(separator);
         let parts: Vec<&str> = split.collect();
-        if parts.len() != 4 {
-            continue;
-        }
-        if parts[0] == String::from("Date") {
+        if idx == 0 {
+            // First line shows the dataset names
+            for column in parts {
+                data_sets.push(DataSet { name: String::from(column), values: Vec::new()});
+            }
             continue;
         }
 
-        let data_line = DataLine {
-            date: String::from(parts[0]),
-            value1: String::from(parts[1]),
-            value2: String::from(parts[2]),
-            value3: String::from(parts[3]),
-        };
-        read_data.push(data_line);
+        for (col_idx, input_value) in parts.iter().enumerate() {
+            data_sets[col_idx].values.push(String::from(input_value.clone()));
+        }
     }
 
-    Ok(read_data)
+    Ok(data_sets)
+}
+
+/// Display the read data set values to the screen. This will just display the list of
+/// all values read with the data set name read by the columns in the input file
+fn show_read_datasets(data_sets: Vec<DataSet>) {
+    let data_set_count = data_sets.len();
+    println!("{} data sets read from input file", data_set_count);
+
+    for cur_data_set in data_sets {
+        for (idx, value) in cur_data_set.values.iter().enumerate() {
+            let output_line: String;
+            if idx == 0 {
+                output_line = format!("{}\t{}", &cur_data_set.name, &value);
+            }
+            else {
+                output_line = format!("{}\t{}", " ", &value);
+            }
+            println!("{}", output_line);
+        }
+    }
 }
 
 /// Show help for the valid arguments and parameters to use when calling the application
