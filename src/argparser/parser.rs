@@ -10,6 +10,7 @@ pub fn parse_arguments(all_args: Vec<String>) -> HashMap<String, String> {
 
     let input_params = to_input_params(all_args);
     for param_item in input_params {
+        println!("argument: {}", param_item.arg_name);
         match param_item.arg_name.as_ref() {
             "i" | "input" => {
                 parsed_args.insert(String::from("input_file"), String::from(param_item.param_value));
@@ -71,6 +72,11 @@ fn to_input_params(all_args: Vec<String>) -> Vec<InputParam> {
                 working_param = None
             }
         }
+    }
+
+    // Check if there is an argument pending to add to the set
+    if let Some(item) = working_param {
+        input_params.push(item);
     }
 
     input_params

@@ -17,10 +17,6 @@ struct BenfordAnalysis {
 }
 
 fn main() {
-    println!("Hello world, I am Julio, the avenger!");
-    println!("Just trying out some stuff here...");
-    println!("");
-
     let mut all_args: Vec<String> = Vec::new();
 
     for (idx, argument) in env::args().enumerate() {
@@ -101,10 +97,7 @@ fn read_file(input_file: String, separator: &str) -> io::Result<Vec<DataSet>> {
 
 fn analyze_data_set(data_set: DataSet) -> BenfordAnalysis {
     let mut occurences: HashMap<String, u32> = HashMap::new();
-
     let total_values = data_set.values.len() as f32;
-
-    println!("{} total values for dataset {}", total_values, data_set.name);
 
     // Go through all the values in the data set get the first digit and count
     // how many items start with the same digit by adding them to the count
@@ -122,12 +115,9 @@ fn analyze_data_set(data_set: DataSet) -> BenfordAnalysis {
 
     for digit in 1..10 {
         let occur_index = format!("{}", digit);
-        println!("digit: {}", occur_index);
         let digit_percentage: u32 = match occurences.get(&occur_index) {
             Some(totals) => {
-
                 let digit_totals = *totals as f32;
-
                 let percentage = digit_totals / total_values * 100f32;
                 percentage as u32
             },
@@ -170,13 +160,10 @@ fn show_read_dataset(analyzed_set: BenfordAnalysis) {
 /// benford_analyze -i=sample2.txt -o=testme.txt
 /// ...
 fn show_help() {
-    println!("No worry amigo, help is on the way...");
-    println!("...");
     println!("Input parameters:");
-    println!("\t-i=<filename> or --input=<filename>");
-    println!("\t-o=<filename> or --output=<filename>");
-    println!("\t-s=<separator> or --separator=<separator> use the specified character/string to split the lines by");
+    println!("\t-i <filename> or --input <filename> The source input filename");
+    println!("\t-s <separator> or --separator <separator> use the specified character/string to split the lines by, e.g. -s , or --separator ;");
+    println!("\t-h or --help Show help");
     println!("");
-    println!("... and of course we might add stuff later!");
 }
 
