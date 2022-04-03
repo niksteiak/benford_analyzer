@@ -2,12 +2,18 @@ use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
 use std::string::String;
+use std::collections::HashMap;
 
 mod argparser;
 
 struct DataSet {
     name: String,
     values: Vec<String>
+}
+
+struct BenfordAnalysis {
+    data_set_name: String,
+    distribution: HashMap<String, u32>,
 }
 
 fn main() {
@@ -46,11 +52,19 @@ fn main() {
         show_help();
     }
 
+    let mut analyses: Vec<BenfordAnalysis> = Vec::new();
     if !input_file.is_empty() {
         println!("Input file is: {}", input_file);
         let data_items = read_file(input_file, &separator);
 
-        show_read_datasets(data_items.unwrap());
+        for cur_data_set in data_items.unwrap() {
+            let cur_analysis = analyze_data_set(cur_data_set);
+            analyses.push(cur_analysis);
+        }
+    }
+
+    for cur_analysis in analyses {
+        show_read_dataset(cur_analysis);
     }
 }
 
@@ -85,25 +99,68 @@ fn read_file(input_file: String, separator: &str) -> io::Result<Vec<DataSet>> {
     Ok(data_sets)
 }
 
-/// Display the read data set values to the screen. This will just display the list of
-/// all values read with the data set name read by the columns in the input file
-fn show_read_datasets(data_sets: Vec<DataSet>) {
-    let data_set_count = data_sets.len();
-    println!("{} data sets read from input file", data_set_count);
+fn analyze_data_set(data_set: DataSet) -> BenfordAnalysis {
+    let mut occurences: HashMap<String, u32> = HashMap::new();
 
-    for cur_data_set in data_sets {
-        for (idx, value) in cur_data_set.values.iter().enumerate() {
-            let output_line: String;
-            if idx == 0 {
-                output_line = format!("{}\t{}", &cur_data_set.name, &value);
-            }
-            else {
-                output_line = format!("{}\t{}", " ", &value);
-            }
-            println!("{}", output_line);
+    let total_values = data_set.values.len() as f32;
+
+    println!("{} total values for dataset {}", total_values, data_set.name);
+
+    // Go through all the values in the data set get the first digit and count
+    // how many items start with the same digit by adding them to the count
+    for item in data_set.values {
+        if item.len() == 0 {
+            continue;
         }
+
+        let first_digit = String::from(&item[0..1]);
+        let digit_count = occurences.entry(first_digit).or_insert(0);
+        *digit_count += 1;
     }
+
+    let mut distribution: HashMap<String, u32> = HashMap::new();
+
+    for digit in 1..10 {
+        let occur_index = format!("{}", digit);
+        println!("digit: {}", occur_index);
+        let digit_percentage: u32 = match occurences.get(&occur_index) {
+            Some(totals) => {
+
+                let digit_totals = *totals as f32;
+
+                let percentage = digit_totals / total_values * 100f32;
+                percentage as u32
+            },
+            None => {
+                0u32
+            }
+        };
+        distribution.insert(occur_index, digit_percentage);
+    }
+
+    let analysis = BenfordAnalysis { data_set_name: data_set.name.clone(),
+        distribution: distribution };
+
+    analysis
 }
+
+/// Display the Analyzed data set
+///
+fn show_read_dataset(analyzed_set: BenfordAnalysis) {
+    println!("Dataset Name: {}", analyzed_set.data_set_name);
+
+    for digit in 1..10 {
+        let digit_index = format!("{}", digit);
+
+        let digit_percentage = match analyzed_set.distribution.get(&digit_index) {
+            Some(percentage) => { *percentage },
+            None => 0u32
+        };
+        println!("{0}: {1} ({2} %)", digit_index, "*".repeat(digit_percentage as usize), digit_percentage);
+    }
+    println!("");
+}
+
 
 /// Show help for the valid arguments and parameters to use when calling the application
 ///
