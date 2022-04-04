@@ -7,7 +7,7 @@ Benford Analyzer is a development experiment. A pet project to help me learn Rus
 
 What this program will do is read a csv file with series of data and analyze the values as per Benford's Law in terms of the begining digit of the values.
 
-The structure of the file should be:
+The structure of the input file should be like:
 
 | Value 1   | Value 2 | ... |
 |-----------|---------|-----|
@@ -20,6 +20,7 @@ The end result will have to show a display of the validity of the data in some f
 
 ## Program Goals
 ---
+An initial goal is to make this program as "handmade" as possible. Since this is a learning project, in the intial iterations of the code will not make use of existing libs, as for example would be to use a parser for the CSV files and the command line arguments
 
 The first milestone to achieve is reading an input file (csv), evaluate the data and calculate the results of the values as per Benford's Law. Once that is complete a visual depiction should be displayed. At first an ASCII chart of some sort will suffice.
 
