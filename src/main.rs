@@ -17,6 +17,7 @@ struct BenfordAnalysis {
 }
 
 fn main() {
+    // Demonstration of git branching
     let mut all_args: Vec<String> = Vec::new();
 
     for (idx, argument) in env::args().enumerate() {
